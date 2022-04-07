@@ -3,7 +3,7 @@ from wsgiref.validate import validator
 from rest_framework import serializers,validators
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-
+from dj_rest_auth.serializers import TokenSerializer
 class RegisterSerializer(serializers.ModelSerializer):
     
     
@@ -57,6 +57,26 @@ class RegisterSerializer(serializers.ModelSerializer):
     #* serializers validations => object level || field level
     def validate(self,data):
         
+        
+        
         if data['password'] != data['password2']:
             raise serializers.ValidationError('Passwords must match')
         return data
+    
+
+class UserTokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields =('id','first_name','last_name','email')
+
+class CustomTokenSerializer(TokenSerializer):
+    
+    #*within token db we don not have user
+    #* we will add user field
+    user = UserTokenSerializer(read_only =True)
+    
+    
+    #*override token meta
+    class Meta(TokenSerializer.Meta):
+        fields = ('key','user')
+        
